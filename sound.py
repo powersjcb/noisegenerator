@@ -9,9 +9,10 @@ from urllib.parse import urlencode
 DURATION = 3  # seconds
 FRAMERATE = 44100
 SAMPLE_WIDTH = 2  # 2 bytes, 16bit audio
+NUM_CHANNELS = 1
 
 
-def fetch_remote_noise():
+def fetch_random_org_noise():
     query = urlencode({
         'num': 10**4,
         'min': - 2 ** (SAMPLE_WIDTH / 2),
@@ -23,18 +24,18 @@ def fetch_remote_noise():
     url = f'https://www.random.org/integers/?{query}'
     res = requests.get(url)
     if res.status_code != 200:
-        raise Exception(f"Invalid response, got status: {res.status_code}")
+        raise Exception(f'invalid response, got status: {res.status_code}')
     return [int(v) for v in res.content.split(b'\n') if v]
 
 
-def native_noise_generator(samples):
+def native_noise_generator(samples, _):
     i = 0
     while i < samples:
         yield random.randint(-2 ** 8, 2 ** 8)
         i += 1
 
 
-def remote_noise_generator(samples):
+def remote_noise_generator(samples, fetch_remote_noise):
     i = 0
     pool_idx = 1
     random_pool = []
@@ -49,12 +50,13 @@ def remote_noise_generator(samples):
 
 def write_wav(filename, audio_generator):
     with wave.open(filename, 'w') as w:
-        w.setnchannels(1)
+        w.setnchannels(NUM_CHANNELS)
         w.setframerate(FRAMERATE)
-        w.setsampwidth(2)
-        data = array.array('h')
-        for value in audio_generator(DURATION * FRAMERATE):
-            data.append(int(value))
+        w.setsampwidth(SAMPLE_WIDTH)
+        required_samples = DURATION * FRAMERATE
+        data = array.array('h', [
+            int(v) for v in audio_generator(required_samples, fetch_random_org_noise)
+        ])
         w.writeframes(data)
 
 
