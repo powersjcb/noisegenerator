@@ -28,21 +28,21 @@ def fetch_random_org_noise():
     return [int(v) for v in res.content.split(b'\n') if v]
 
 
-def native_noise_generator(samples, _):
+def native_noise_generator(samples):
     i = 0
     while i < samples:
         yield random.randint(-2 ** 8, 2 ** 8)
         i += 1
 
 
-def remote_noise_generator(samples, fetch_remote_noise):
+def remote_noise_generator(samples):
     i = 0
     pool_idx = 1
     random_pool = []
     while i < samples:
         if pool_idx >= len(random_pool):
             pool_idx = 0
-            random_pool = fetch_remote_noise()
+            random_pool = fetch_random_org_noise()
         yield random_pool[pool_idx]
         i += 1
         pool_idx += 1
@@ -55,7 +55,7 @@ def write_wav(filename, audio_generator):
         w.setsampwidth(SAMPLE_WIDTH)
         required_samples = DURATION * FRAMERATE
         data = array.array('h', [
-            int(v) for v in audio_generator(required_samples, fetch_random_org_noise)
+            int(v) for v in audio_generator(required_samples)
         ])
         w.writeframes(data)
 
