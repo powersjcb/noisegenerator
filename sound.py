@@ -7,15 +7,15 @@ from urllib.parse import urlencode
 
 
 DURATION = 3  # seconds
-FRAMERATE = 44100
-SAMPLE_WIDTH = 2  # 2 bytes, 16bit audio
+FRAMERATE = 11025  # sampling frequency
+SAMPLE_WIDTH = 1  # 1 bytes, 8bit audio
 NUM_CHANNELS = 1
 
 
 def fetch_random_org_noise():
     query = urlencode({
         'num': 10**4,
-        'min': - 2 ** (SAMPLE_WIDTH / 2),
+        'min': - 2 ** (SAMPLE_WIDTH * 8 / 2),
         'max': 2 ** (SAMPLE_WIDTH * 8 / 2),
         'base': '10',
         'format': 'plain',
