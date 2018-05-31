@@ -24,7 +24,7 @@ def fetch_random_org_noise():
     url = f'https://www.random.org/integers/?{query}'
     res = requests.get(url)
     if res.status_code != 200:
-        raise Exception(f'invalid response, got status: {res.status_code}')
+        raise Exception(f'invalid response, got status: {res.status_code} \t\n got content: {res.content}')
     return [int(v) for v in res.content.split(b'\n') if v]
 
 
